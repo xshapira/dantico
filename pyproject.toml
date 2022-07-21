@@ -61,7 +61,7 @@ test = [
     "isort",
     "flake8",
     "mypy",
-    "django-stubs",
+    "django-stubs[compatible-mypy]",
     "psycopg2-binary",
 ]
 doc = []
@@ -71,6 +71,8 @@ profile = "black"
 known_third_party = "pydantic"
 
 [tool.mypy]
+ignore_missing_imports = true
+
 # --strict
 disallow_any_generics = true
 disallow_subclassing_any = true

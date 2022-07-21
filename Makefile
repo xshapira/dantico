@@ -18,7 +18,7 @@ lint: ## Run code linters
 	black --check pydantic_django tests
 	isort --check pydantic_django tests
 	flake8 pydantic_django tests
-	mypy  pydantic_django
+	mypy pydantic_django
 
 fmt format: ## Run code formatters
 	make clean

@@ -175,7 +175,7 @@ class TestModelSchema:
                     "format": "date",
                 },
             },
-            "required": ["id", "title",],
+            "required": ["id", "title",],  # noqa: E231
         }
 
     def test_schema_custom_fields(self):
