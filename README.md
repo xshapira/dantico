@@ -123,3 +123,7 @@ schema.apply(new_user, exclude_none=True)
 assert new_user.first_name == "Max" # True
 assert new_user.username == "Max" # True
 ```
+
+## License
+
+This project is licensed under the terms of the MIT license.

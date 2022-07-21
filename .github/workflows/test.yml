@@ -50,5 +50,3 @@ jobs:
         run: mypy pydantic_django
       - name: Test
         run: pytest --cov=pydantic_django --cov-report=xml tests
-      - name: Coverage
-        uses: codecov/codecov-action@v3
