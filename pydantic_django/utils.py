@@ -17,8 +17,7 @@ logger = logging.getLogger()
 
 
 def compute_field_annotations(
-    namespace: "Dict[str, Any]",
-    **field_definitions: Any,
+    namespace: "Dict[str, Any]", **field_definitions: Any,
 ) -> "Dict[str, Any]":
 
     fields = {}

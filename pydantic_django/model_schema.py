@@ -297,10 +297,7 @@ class ModelSchemaConfig(BaseConfig):
 class ModelSchemaMetaclass(ModelMetaclass):
     @no_type_check
     def __new__(
-        mcs,
-        name: str,
-        bases: tuple,
-        namespace: dict,
+        mcs, name: str, bases: tuple, namespace: dict,
     ):
         cls = super().__new__(mcs, name, bases, namespace)
         if bases == (SchemaBaseModel,) or not namespace.get("Config"):

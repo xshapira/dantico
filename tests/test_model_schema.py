@@ -175,10 +175,7 @@ class TestModelSchema:
                     "format": "date",
                 },
             },
-            "required": [
-                "id",
-                "title",
-            ],
+            "required": ["id", "title",],
         }
 
     def test_schema_custom_fields(self):
