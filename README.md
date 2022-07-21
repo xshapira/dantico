@@ -17,7 +17,7 @@ The key features are:
 ## Requirements
 
 - Python 3.6+
-- Django 2.1+
+- Django 2.2+
 - Pydantic 1.6+
 
 ## Installation
