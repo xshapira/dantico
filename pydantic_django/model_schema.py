@@ -131,7 +131,7 @@ def update_class_missing_fields(
             validate_field_name(bases, ann_name)
             value = namespace.get(ann_name, Undefined)
             allowed_types = (
-                get_args(ann_type) if get_origin(ann_type) is Union else (ann_type,)
+                get_args(ann_type) if get_origin(ann_type) is Union else (ann_type,)  # type: ignore [comparison-overlap]
             )
             if (
                 is_untouched(value)
@@ -242,7 +242,7 @@ class ModelSchemaConfig(BaseConfig):
             yield cast(Field, fld)
 
     def validate_configuration(self) -> None:
-        self.include = set() if self.include == ALL_FIELDS else set(self.include or ())
+        self.include = set() if self.include == ALL_FIELDS else set(self.include or ())  # type: ignore [comparison-overlap]
 
         if not self.model:
             raise ConfigError("Invalid Configuration. 'model' is required")
