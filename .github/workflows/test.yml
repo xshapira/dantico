@@ -27,9 +27,9 @@ jobs:
         run: pip install pytest pytest-django
       - name: Test
         run: pytest
+
   codestyle:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
