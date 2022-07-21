@@ -3,7 +3,8 @@ from unittest.mock import Mock
 
 import django
 import pytest
-from django.contrib.postgres import fields as ps_fields
+
+# from django.contrib.postgres import fields as ps_fields
 from django.db import models
 from django.db.models import Manager
 
