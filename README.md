@@ -62,9 +62,13 @@ from django.contrib.auth import get_user_model
 from pydantic_django import ModelSchema, model_validator
 
 UserModel = get_user_model()
+
 new_user = UserModel.objects.create_user(
-    username="Max", email="max@winoutt.com",
-    password="password", first_name="Max", last_name="Shapira"
+    username="Max",
+    email="max@winoutt.com",
+    password="password",
+    first_name="Max",
+    last_name="Shapira",
 )
 
 
@@ -75,6 +79,7 @@ class UserSchema(ModelSchema):
         exclude = ["password"]
 
 schema = UserSchema.from_orm(new_user)
+
 print(schema.json(indent=2)
 {
     "id": 1,
@@ -98,7 +103,12 @@ from django.contrib.auth import get_user_model
 from pydantic_django import ModelSchema, model_validator
 
 UserModel = get_user_model()
-new_user = UserModel.objects.create_user(username="Max", email="max@winoutt.com", password="password")
+
+new_user = UserModel.objects.create_user(
+      username="Max",
+      email="max@winoutt.com",
+      password="password",
+  )
 
 
 class UpdateUserSchema(ModelSchema):
