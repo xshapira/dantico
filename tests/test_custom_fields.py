@@ -1,10 +1,9 @@
 import json
 
 import pytest
+from dantico import ModelSchema
 from django.db import models
 from pydantic import ValidationError
-
-from dantico import ModelSchema
 
 
 class Programmer(models.Model):

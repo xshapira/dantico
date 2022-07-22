@@ -1,10 +1,10 @@
 from typing import List
 from unittest.mock import Mock
 
+from dantico import Schema
 from django.db.models import Manager, QuerySet
 from django.db.models.fields.files import ImageFieldFile
 from pydantic import Field
-from dantico import Schema
 
 
 class FakeManager(Manager):

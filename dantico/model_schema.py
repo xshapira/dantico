@@ -14,6 +14,9 @@ from typing import (
     no_type_check,
 )
 
+from dantico.exceptions import ConfigError
+from dantico.fields import django_to_pydantic_with_choices
+from dantico.utils import compute_field_annotations
 from django.db.models import Field, ManyToManyRel, ManyToOneRel
 from pydantic import BaseConfig, BaseModel, PyObject
 from pydantic.class_validators import (
@@ -39,9 +42,6 @@ from pydantic.utils import (
     unique_list,
     validate_field_name,
 )
-from dantico.exceptions import ConfigError
-from dantico.fields import django_to_pydantic_with_choices
-from dantico.utils import compute_field_annotations
 
 from .getters import DjangoGetter
 from .mixins import SchemaMixins

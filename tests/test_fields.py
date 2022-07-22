@@ -3,12 +3,11 @@ from unittest.mock import Mock
 
 import django
 import pytest
+from dantico import ModelSchema
 
 # from django.contrib.postgres import fields as ps_fields
 from django.db import models
 from django.db.models import Manager
-
-from dantico import ModelSchema
 
 
 def test_inheritance():
