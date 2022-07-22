@@ -29,7 +29,7 @@ pip install dantico
 
 ## Usage
 
-Here are a few examples of what you can do with **Dantico**:
+Here are a few examples of what you can do with **dantico**:
 
 ### Field Validator
 
