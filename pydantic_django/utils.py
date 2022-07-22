@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any, Dict, Type
 from django.db import models
 from django.db.models import Model
 from pydantic.utils import is_valid_field
-
 from pydantic_django.exceptions import ConfigError
 
 if TYPE_CHECKING:
@@ -17,7 +16,8 @@ logger = logging.getLogger()
 
 
 def compute_field_annotations(
-    namespace: "Dict[str, Any]", **field_definitions: Any,
+    namespace: "Dict[str, Any]",
+    **field_definitions: Any,
 ) -> "Dict[str, Any]":
 
     fields = {}

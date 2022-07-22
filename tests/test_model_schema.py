@@ -1,9 +1,9 @@
 import json
 
 import pytest
-
 from pydantic_django import ModelSchema, SchemaFactory, model_validator
 from pydantic_django.exceptions import ConfigError
+
 from tests.models import Auction
 
 
@@ -175,7 +175,10 @@ class TestModelSchema:
                     "format": "date",
                 },
             },
-            "required": ["id", "title",],  # noqa: E231
+            "required": [
+                "id",
+                "title",
+            ],  # noqa: E231
         }
 
     def test_schema_custom_fields(self):

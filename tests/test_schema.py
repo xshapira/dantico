@@ -4,7 +4,6 @@ from unittest.mock import Mock
 from django.db.models import Manager, QuerySet
 from django.db.models.fields.files import ImageFieldFile
 from pydantic import Field
-
 from pydantic_django import Schema
 
 

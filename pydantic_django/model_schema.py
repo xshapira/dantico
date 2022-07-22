@@ -39,7 +39,6 @@ from pydantic.utils import (
     unique_list,
     validate_field_name,
 )
-
 from pydantic_django.exceptions import ConfigError
 from pydantic_django.fields import django_to_pydantic_with_choices
 from pydantic_django.utils import compute_field_annotations
@@ -297,7 +296,10 @@ class ModelSchemaConfig(BaseConfig):
 class ModelSchemaMetaclass(ModelMetaclass):
     @no_type_check
     def __new__(
-        mcs, name: str, bases: tuple, namespace: dict,
+        mcs,
+        name: str,
+        bases: tuple,
+        namespace: dict,
     ):
         cls = super().__new__(mcs, name, bases, namespace)
         if bases == (SchemaBaseModel,) or not namespace.get("Config"):

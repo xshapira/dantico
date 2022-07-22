@@ -7,7 +7,6 @@ import pytest
 # from django.contrib.postgres import fields as ps_fields
 from django.db import models
 from django.db.models import Manager
-
 from pydantic_django import ModelSchema
 
 
