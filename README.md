@@ -26,7 +26,11 @@ The key features are:
 pip install pydantic-django
 ```
 
-## Field Validator
+## Usage
+
+Here are a few examples of what you can do with **Pydantic-Django**:
+
+### Field Validator
 
 `model_validator(*args, **kwargs)` is a substitute for Pydantic [validator](https://pydantic-docs.helpmanual.io/usage/validators/) used for pre and post fields validation.
 Their functionalities are the same. More information can be found [here](https://pydantic-docs.helpmanual.io/usage/validators/).
@@ -52,7 +56,7 @@ class CreateUserSchema(ModelSchema):
         return value_data
 ```
 
-## Generate schema instance
+### Generate schema instance
 
 You can generate a schema instance from your django model instance using `from_orm(cls, obj: Any)`
 
@@ -90,7 +94,7 @@ print(schema.json(indent=2)
 }
 ```
 
-## From ModelSchema to Django Model
+### From ModelSchema to Django Model
 
 You can transfer data from your ModelSchema to Django Model instance using `apply(self, model_instance, **kwargs)`.
 The `apply` function uses Pydantic model `.dict` function, `dict` function filtering what can be passed as `kwargs` to the `.apply` function.
