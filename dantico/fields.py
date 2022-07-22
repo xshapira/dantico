@@ -25,11 +25,11 @@ from django.db.models.fields import Field
 from django.utils.encoding import force_str
 from pydantic import AnyUrl, EmailStr, IPvAnyAddress, Json
 from pydantic.fields import FieldInfo, Undefined
-from pydantic_django.factory import SchemaFactory
-from pydantic_django.schema_registry import SchemaRegister, registry as global_registry
+from dantico.factory import SchemaFactory
+from dantico.schema_registry import SchemaRegister, registry as global_registry
 
 if TYPE_CHECKING:
-    from pydantic_django.model_schema import ModelSchema
+    from dantico.model_schema import ModelSchema
 
 
 TModel = TypeVar("TModel")

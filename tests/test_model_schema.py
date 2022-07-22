@@ -1,8 +1,8 @@
 import json
 
 import pytest
-from pydantic_django import ModelSchema, SchemaFactory, model_validator
-from pydantic_django.exceptions import ConfigError
+from dantico import ModelSchema, SchemaFactory, model_validator
+from dantico.exceptions import ConfigError
 
 from tests.models import Auction
 

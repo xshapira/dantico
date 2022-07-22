@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union, cast
 
 from django.db.models import Model
-from pydantic_django.exceptions import ConfigError
+from dantico.exceptions import ConfigError
 
 from .schema_registry import SchemaRegister, registry as schema_registry
 

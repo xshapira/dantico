@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, Type
 from django.db import models
 from django.db.models import Model
 from pydantic.utils import is_valid_field
-from pydantic_django.exceptions import ConfigError
+from dantico.exceptions import ConfigError
 
 if TYPE_CHECKING:
     Dict[str, Any]

@@ -1,13 +1,13 @@
 
-# Pydantic-Django
+# Dantico
 
 Tools to convert Django ORM models to Pydantic models.
 
-[![GitHub Actions (Test)](https://github.com/xshapira/pydantic-django/workflows/Test/badge.svg)](https://github.com/xshapira/pydantic-django)
-[![GitHub Actions (Publish)](https://github.com/xshapira/pydantic-django/workflows/Publish/badge.svg)](https://github.com/xshapira/pydantic-django)
-[![PyPI Supported Python Versions](https://img.shields.io/pypi/pyversions/pydantic-django.svg)](https://pypi.python.org/pypi/pydantic-django)
-[![PyPI Supported Django Versions](https://img.shields.io/pypi/djversions/pydantic-django.svg)](https://docs.djangoproject.com/en/dev/releases/)
-[![PyPI version](https://badge.fury.io/py/pydantic-django.svg)](https://badge.fury.io/py/pydantic-django)
+[![GitHub Actions (Test)](https://github.com/xshapira/dantico/workflows/Test/badge.svg)](https://github.com/xshapira/dantico)
+[![GitHub Actions (Publish)](https://github.com/xshapira/dantico/workflows/Publish/badge.svg)](https://github.com/xshapira/dantico)
+[![PyPI Supported Python Versions](https://img.shields.io/pypi/pyversions/dantico.svg)](https://pypi.python.org/pypi/dantico)
+[![PyPI Supported Django Versions](https://img.shields.io/pypi/djversions/dantico.svg)](https://docs.djangoproject.com/en/dev/releases/)
+[![PyPI version](https://badge.fury.io/py/dantico.svg)](https://badge.fury.io/py/dantico)
 
 The key features are:
 
@@ -24,12 +24,12 @@ The key features are:
 ## Installation
 
 ```
-pip install pydantic-django
+pip install dantico
 ```
 
 ## Usage
 
-Here are a few examples of what you can do with **Pydantic-Django**:
+Here are a few examples of what you can do with **Dantico**:
 
 ### Field Validator
 
@@ -38,7 +38,7 @@ Their functionalities are the same. More information can be found [here](https:/
 
 ```Python
 from django.contrib.auth import get_user_model
-from pydantic_django import ModelSchema, model_validator
+from dantico import ModelSchema, model_validator
 
 UserModel = get_user_model()
 
@@ -64,7 +64,7 @@ You can generate a schema instance from your django model instance using `from_o
 ```Python
 from typings import Optional
 from django.contrib.auth import get_user_model
-from pydantic_django import ModelSchema, model_validator
+from dantico import ModelSchema, model_validator
 
 UserModel = get_user_model()
 
@@ -105,7 +105,7 @@ For more information, check out [Pydantic model export](https://pydantic-docs.he
 ```Python
 from typings import Optional
 from django.contrib.auth import get_user_model
-from pydantic_django import ModelSchema, model_validator
+from dantico import ModelSchema, model_validator
 
 UserModel = get_user_model()
 

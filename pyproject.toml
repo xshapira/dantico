@@ -3,11 +3,11 @@ requires = ["flit_core >=2,<4"]
 build-backend = "flit_core.buildapi"
 
 [tool.flit.metadata]
-module = "pydantic_django"
-dist-name = "pydantic-django"
+module = "dantico"
+dist-name = "dantico"
 author = "Max Shapira"
 author-email = "max@winoutt.com"
-home-page = "https://github.com/xshapira/pydantic-django"
+home-page = "https://github.com/xshapira/dantico"
 classifiers = [
     "Intended Audience :: Information Technology",
     "Intended Audience :: System Administrators",
@@ -49,7 +49,7 @@ requires-python = ">=3.6"
 
 
 [tool.flit.metadata.urls]
-Documentation = "https://github.com/xshapira/pydantic-django"
+Documentation = "https://github.com/xshapira/dantico"
 
 [tool.flit.metadata.requires-extra]
 test = [

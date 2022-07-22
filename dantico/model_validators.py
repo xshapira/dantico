@@ -9,7 +9,7 @@ from pydantic.class_validators import (
     _prepare_validator,
 )
 from pydantic.typing import AnyCallable
-from pydantic_django.exceptions import ConfigError
+from dantico.exceptions import ConfigError
 
 __all__ = ["model_validator", "ModelValidatorGroup"]
 
