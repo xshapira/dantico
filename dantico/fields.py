@@ -20,13 +20,13 @@ from typing import (
 from uuid import UUID
 
 import django
+from dantico.factory import SchemaFactory
+from dantico.schema_registry import SchemaRegister, registry as global_registry
 from django.db import models
 from django.db.models.fields import Field
 from django.utils.encoding import force_str
 from pydantic import AnyUrl, EmailStr, IPvAnyAddress, Json
 from pydantic.fields import FieldInfo, Undefined
-from dantico.factory import SchemaFactory
-from dantico.schema_registry import SchemaRegister, registry as global_registry
 
 if TYPE_CHECKING:
     from dantico.model_schema import ModelSchema
