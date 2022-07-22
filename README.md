@@ -1,5 +1,5 @@
 
-# Dantico
+# dantico
 
 Tools to convert Django ORM models to Pydantic models.
 
