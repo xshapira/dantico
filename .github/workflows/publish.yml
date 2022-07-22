@@ -2,8 +2,8 @@ name: Publish
 
 on:
   release:
-    types: [published]
-  workflow_dispatch:
+    types:
+      - created
 
 jobs:
   publish:
@@ -27,4 +27,4 @@ jobs:
         env:
           FLIT_USERNAME: ${{ secrets.FLIT_USERNAME }}
           FLIT_PASSWORD: ${{ secrets.FLIT_PASSWORD }}
-        run: flit publish
+        run: bash scripts/publish.sh

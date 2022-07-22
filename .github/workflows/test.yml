@@ -21,32 +21,17 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install core
-        run: pip install "Django${{ matrix.django-version }}" pydantic pydantic[email]
+      - name: Install Django
+        run: pip install "Django${{ matrix.django-version }}"
+      - name: Install Pydantic
+        run: pip install pydantic pydantic[email]
       - name: Install tests
         run: pip install pytest pytest-django
-      - name: Test
-        run: pytest
-
-  codestyle:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install Flit
         run: pip install flit
       - name: Install Dependencies
         run: flit install --symlink
-      - name: Black
-        run: black --check pydantic_django tests
-      - name: isort
-        run: isort --check pydantic_django tests
-      - name: Flake8
-        run: flake8 pydantic_django tests
-      - name: mypy
-        run: mypy pydantic_django
+      - name: Formatting
+        run: bash scripts/format-imports.sh
       - name: Test
-        run: pytest --cov=pydantic_django --cov-report=xml tests
+        run: bash scripts/test.sh
