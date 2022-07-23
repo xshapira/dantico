@@ -37,22 +37,20 @@ Here are a few examples of what you can do with **dantico**:
 Their functionalities are the same. More information can be found [here](https://pydantic-docs.helpmanual.io/usage/validators/).
 
 ```Python
-from django.contrib.auth import get_user_model
+from users.models import User
 from dantico import ModelSchema, model_validator
 
-UserModel = get_user_model()
 
-
-class CreateUserSchema(ModelSchema):
+class UserSchema(ModelSchema):
     class Config:
-        model = UserModel
+        model = User
         # Fields to include, by default include all the fields
         # from the Django model
         include = ["username", "email", "password"]
 
     @model_validator("username")
     def validate_unique_username(cls, value_data: str) -> str:
-        if UserModel.objects.filter(username__icontains=value_data).exists():
+        if User.objects.filter(username__icontains=value_data).exists():
             raise ValueError("Username exists")
         return value_data
 ```
@@ -63,12 +61,10 @@ You can generate a schema instance from your django model instance using `from_o
 
 ```Python
 from typings import Optional
-from django.contrib.auth import get_user_model
+from users.models import User
 from dantico import ModelSchema, model_validator
 
-UserModel = get_user_model()
-
-new_user = UserModel.objects.create_user(
+new_user = User.objects.create_user(
     username="Max",
     email="max@winoutt.com",
     password="password",
@@ -79,7 +75,7 @@ new_user = UserModel.objects.create_user(
 
 class UserSchema(ModelSchema):
     class Config:
-        model = UserModel
+        model = User
         # Include all the fields from a model except 'password' field
         exclude = ["password"]
 
@@ -104,13 +100,11 @@ For more information, check out [Pydantic model export](https://pydantic-docs.he
 
 ```Python
 from typings import Optional
-from django.contrib.auth import get_user_model
+from users.models import User
 from dantico import ModelSchema, model_validator
 
-UserModel = get_user_model()
-
-new_user = UserModel.objects.create_user(
-      username="Max",
+new_user = User.objects.create_user(
+      username="max",
       email="max@winoutt.com",
       password="password",
   )
@@ -118,7 +112,7 @@ new_user = UserModel.objects.create_user(
 
 class UpdateUserSchema(ModelSchema):
     class Config:
-        model = UserModel
+        model = User
         include = ["first_name", "last_name", "username"]
         optional = ["username"]  # 'username' is now optional
 
@@ -126,7 +120,7 @@ schema = UpdateUserSchema(first_name="Max", last_name="Shapira")
 schema.apply(new_user, exclude_none=True)
 
 assert new_user.first_name == "Max" # True
-assert new_user.username == "Max" # True
+assert new_user.username == "max" # True
 ```
 
 ## License
