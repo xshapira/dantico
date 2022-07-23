@@ -352,34 +352,34 @@ def test_default():
 
 
 def test_many_to_many():
-    class Foo(models.Model):
-        f = models.CharField()
+    class Movie(models.Model):
+        name = models.CharField()
 
         class Meta:
             app_label = "tests"
 
-    class Bar(models.Model):
-        many_to_many = models.ManyToManyField(Foo, blank=True)
+    class Character(models.Model):
+        many_to_many = models.ManyToManyField(Movie, blank=True)
 
         class Meta:
             app_label = "tests"
 
-    class BarSchema(ModelSchema):
+    class CharacterSchema(ModelSchema):
         class Config:
-            model = Bar
+            model = Character
 
     # Mock database data:
-    foo = Mock()
-    foo.pk = 1
-    foo.f = "test"
+    movie = Mock()
+    movie.pk = 1
+    movie.name = "test"
 
     many_to_many = Mock(spec=Manager)
-    many_to_many.all = lambda: [foo]
+    many_to_many.all = lambda: [movie]
 
-    bar = Mock()
-    bar.id = 1
-    bar.many_to_many = many_to_many
+    character = Mock()
+    character.id = 1
+    character.many_to_many = many_to_many
 
-    data = BarSchema.from_orm(bar).dict()
+    data = CharacterSchema.from_orm(character).dict()
 
     assert data == {"id": 1, "many_to_many": [1]}
