@@ -20,13 +20,15 @@ from typing import (
 from uuid import UUID
 
 import django
-from dantico.factory import SchemaFactory
-from dantico.schema_registry import SchemaRegister, registry as global_registry
 from django.db import models
 from django.db.models.fields import Field
 from django.utils.encoding import force_str
 from pydantic import AnyUrl, EmailStr, IPvAnyAddress, Json
 from pydantic.fields import FieldInfo, Undefined
+
+from dantico.factory import SchemaFactory
+from dantico.schema_registry import SchemaRegister
+from dantico.schema_registry import registry as global_registry
 
 if TYPE_CHECKING:
     from dantico.model_schema import ModelSchema
@@ -60,8 +62,7 @@ def get_choices(
 ) -> Iterator[Tuple[str, str, str]]:
     for value, help_text in choices:
         if isinstance(help_text, (tuple, list)):
-            for choice in get_choices(help_text):
-                yield choice
+            yield from get_choices(help_text)
         else:
             name = choices_name_to_string(value)
             description = force_str(help_text)
@@ -112,7 +113,9 @@ def django_to_pydantic_with_choices(
 
 @singledispatch
 def django_to_pydantic(field: Field, **kwargs: Any) -> Tuple[Type, FieldInfo]:
-    raise Exception("Could not infer Django field %s (%s)" % (field, field.__class__))
+    raise Exception(
+        "Could not infer Django field {} ({})".format(field, field.__class__)
+    )
 
 
 @no_type_check

@@ -42,8 +42,6 @@ repos:
       - id: isort
         name: isort (pyi)
         types: [pyi]
-      - id: isort
-        args: ['--profile', 'black']
   - repo: https://github.com/psf/black
     rev: 22.6.0
     hooks:
