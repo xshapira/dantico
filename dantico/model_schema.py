@@ -14,9 +14,6 @@ from typing import (
     no_type_check,
 )
 
-from dantico.exceptions import ConfigError
-from dantico.fields import django_to_pydantic_with_choices
-from dantico.utils import compute_field_annotations
 from django.db.models import Field, ManyToManyRel, ManyToOneRel
 from pydantic import BaseConfig, BaseModel, PyObject
 from pydantic.class_validators import (
@@ -42,6 +39,10 @@ from pydantic.utils import (
     unique_list,
     validate_field_name,
 )
+
+from dantico.exceptions import ConfigError
+from dantico.fields import django_to_pydantic_with_choices
+from dantico.utils import compute_field_annotations
 
 from .getters import DjangoGetter
 from .mixins import SchemaMixins
@@ -209,7 +210,7 @@ class ModelSchemaConfig(BaseConfig):
     def __init__(
         self, schema_class_name: str, options: Optional[Dict[str, Any]] = None
     ):
-        super(ModelSchemaConfig, self).__init__()
+        super().__init__()
         self.model = getattr(options, "model", None)
         _include = getattr(options, "include", None) or ALL_FIELDS
         self.include = set() if _include == ALL_FIELDS else set(_include or ())
@@ -384,10 +385,10 @@ class SchemaBaseModel(BaseModel, SchemaMixins):
     pass
 
 
+# `ModelSchema` is a `SchemaBaseModel` that uses
+# the `ModelSchemaMetaclass` to generate a schema.
+# We use the `DjangoGetter` to get the values for the fields.
 class ModelSchema(SchemaBaseModel, metaclass=ModelSchemaMetaclass):
     class Config:
         orm_mode = True
         getter_dict = DjangoGetter
-        # `ModelSchema` is a `SchemaBaseModel` that uses
-        # the `ModelSchemaMetaclass` to generate a schema.
-        # We use the `DjangoGetter` to get the values for the fields.

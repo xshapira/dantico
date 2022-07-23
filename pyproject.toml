@@ -68,7 +68,11 @@ doc = []
 
 [tool.isort]
 profile = "black"
-known_third_party = "pydantic"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+line_length = 88
+known_third_party = ["pydantic", "django"]
 
 [tool.mypy]
 ignore_missing_imports = true
