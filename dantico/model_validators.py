@@ -67,13 +67,12 @@ model_validator = ModelValidator.model_validator
 
 class ModelValidatorGroup(ValidatorGroup):
     def check_for_unused(self) -> None:
-        unused_validators = set(
+        if unused_validators := set(
             chain.from_iterable(
                 (v.func.__name__ for v in self.validators[f])
                 for f in (self.validators.keys() - self.used_validators)
             )
-        )
-        if unused_validators:
+        ):
             fn = ", ".join(unused_validators)
             raise ConfigError(
                 f"Validators defined with incorrect fields: {fn} "  # noqa: Q000

@@ -24,8 +24,5 @@ class DjangoGetter(GetterDict):
             return list(result)
 
         elif isinstance(result, FieldFile):
-            if not result:
-                return None
-            return result.url
-
+            return result.url if result else None
         return result

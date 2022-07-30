@@ -44,8 +44,7 @@ class SchemaFactory:
         if fields and exclude:
             raise ConfigError("Only one of 'include' or 'exclude' should be set.")
 
-        schema = registry.get_model_schema(model)
-        if schema:
+        if schema := registry.get_model_schema(model):
             return schema
 
         model_config_kwargs = dict(

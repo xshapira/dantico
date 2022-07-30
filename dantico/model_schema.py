@@ -221,7 +221,7 @@ class ModelSchemaConfig(BaseConfig):
         self.optional = (
             {ALL_FIELDS} if _optional == ALL_FIELDS else set(_optional or ())
         )
-        self.depth = int(getattr(options, "depth", 0))
+        self.depth = getattr(options, "depth", 0)
         self.schema_class_name = schema_class_name
         self.validate_configuration()
         self.process_build_schema_parameters()
@@ -230,8 +230,7 @@ class ModelSchemaConfig(BaseConfig):
     def clone_field(cls, field: FieldInfo, **kwargs: Any) -> FieldInfo:
         field_dict = dict(field.__repr_args__())
         field_dict.update(**kwargs)
-        new_field = FieldInfo(**field_dict)  # type: ignore
-        return new_field
+        return FieldInfo(**field_dict)
 
     def model_fields(self) -> Iterator[Field]:
         """Return iterator with all the fields that can be part of a schema."""
@@ -254,16 +253,17 @@ class ModelSchemaConfig(BaseConfig):
 
     def check_invalid_keys(self, **field_names: Dict[str, Any]) -> None:
         keys = field_names.keys()
-        invalid_include_exclude_fields = (
-            set(self.include or []) | set(self.exclude or [])
-        ) - keys
-        if invalid_include_exclude_fields:
+        if (
+            invalid_include_exclude_fields := (
+                set(self.include or []) | set(self.exclude or [])
+            )
+            - keys
+        ):
             raise ConfigError(
                 f"Field(s) {invalid_include_exclude_fields} are not in model."
             )
         if ALL_FIELDS not in self.optional:
-            invalid_options_fields = set(self.optional) - keys
-            if invalid_options_fields:
+            if invalid_options_fields := set(self.optional) - keys:
                 raise ConfigError(
                     f"Field(s) {invalid_options_fields} are not in model."
                 )
@@ -273,12 +273,10 @@ class ModelSchemaConfig(BaseConfig):
             return False
         if ALL_FIELDS in self.optional:
             return True
-        if (
+        return (
             isinstance(self.optional, (set, tuple, list))
             and field_name in self.optional
-        ):
-            return True
-        return False
+        )
 
     def process_build_schema_parameters(self) -> None:
         model_pk = getattr(
