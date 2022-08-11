@@ -42,12 +42,11 @@ from pydantic.utils import (
 
 from dantico.exceptions import ConfigError
 from dantico.fields import django_to_pydantic_with_choices
+from dantico.getters import DjangoGetter
+from dantico.mixins import SchemaMixins
+from dantico.model_validators import ModelValidatorGroup
+from dantico.schema_registry import registry as global_registry
 from dantico.utils import compute_field_annotations
-
-from .getters import DjangoGetter
-from .mixins import SchemaMixins
-from .model_validators import ModelValidatorGroup
-from .schema_registry import registry as global_registry
 
 if TYPE_CHECKING:
     from pydantic.class_validators import ValidatorListDict
@@ -221,7 +220,8 @@ class ModelSchemaConfig(BaseConfig):
         self.optional = (
             {ALL_FIELDS} if _optional == ALL_FIELDS else set(_optional or ())
         )
-        self.depth = int(getattr(options, "depth", 0))
+
+        self.depth = getattr(options, "depth", 0)
         self.schema_class_name = schema_class_name
         self.validate_configuration()
         self.process_build_schema_parameters()
@@ -273,12 +273,10 @@ class ModelSchemaConfig(BaseConfig):
             return False
         if ALL_FIELDS in self.optional:
             return True
-        if (
+        return (
             isinstance(self.optional, (set, tuple, list))
             and field_name in self.optional
-        ):
-            return True
-        return False
+        )
 
     def process_build_schema_parameters(self) -> None:
         model_pk = getattr(
@@ -385,10 +383,8 @@ class SchemaBaseModel(BaseModel, SchemaMixins):
     pass
 
 
-# `ModelSchema` is a `SchemaBaseModel` that uses
-# the `ModelSchemaMetaclass` to generate a schema.
-# We use the `DjangoGetter` to get the values for the fields.
 class ModelSchema(SchemaBaseModel, metaclass=ModelSchemaMetaclass):
     class Config:
         orm_mode = True
+        # We use the `DjangoGetter` to get the values for the fields.
         getter_dict = DjangoGetter
