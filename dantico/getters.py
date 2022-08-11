@@ -16,16 +16,10 @@ __all__ = [
 class DjangoGetter(GetterDict):
     def get(self, key: Any, default: Any = None) -> Any:
         result = super().get(key, default)
-
         if isinstance(result, Manager):
             return list(result.all())
-
         elif isinstance(result, getattr(QuerySet, "__origin__", QuerySet)):
             return list(result)
-
         elif isinstance(result, FieldFile):
-            if not result:
-                return None
-            return result.url
-
+            return result.url if result else None
         return result
