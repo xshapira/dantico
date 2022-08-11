@@ -4,10 +4,11 @@
 Tools to convert Django ORM models to Pydantic models.
 
 [![GitHub Actions (Test)](https://github.com/xshapira/dantico/workflows/Test/badge.svg)](https://github.com/xshapira/dantico)
-[![GitHub Actions (Publish)](https://github.com/xshapira/dantico/workflows/Publish/badge.svg)](https://github.com/xshapira/dantico)
+[![Codecov](https://img.shields.io/codecov/c/gh/xshapira/dantico?color=%2334D058)](https://codecov.io/gh/xshapira/dantico)
+[![Downloads](https://pepy.tech/badge/dantico/month)](https://pepy.tech/project/dantico)
+[![PyPI version](https://badge.fury.io/py/dantico.svg)](https://badge.fury.io/py/dantico)
 [![PyPI Supported Python Versions](https://img.shields.io/pypi/pyversions/dantico.svg)](https://pypi.python.org/pypi/dantico)
 [![PyPI Supported Django Versions](https://img.shields.io/pypi/djversions/dantico.svg)](https://docs.djangoproject.com/en/dev/releases/)
-[![PyPI version](https://badge.fury.io/py/dantico.svg)](https://badge.fury.io/py/dantico)
 
 The key features are:
 
