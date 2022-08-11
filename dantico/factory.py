@@ -1,13 +1,14 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union, cast
 
-from dantico.exceptions import ConfigError
 from django.db.models import Model
 
-from .schema_registry import SchemaRegister, registry as schema_registry
+from dantico.exceptions import ConfigError
+from dantico.schema_registry import SchemaRegister
+from dantico.schema_registry import registry as schema_registry
 
 if TYPE_CHECKING:
-    from .model_schema import ModelSchema
-    from .schema import Schema
+    from dantico.model_schema import ModelSchema
+    from dantico.schema import Schema
 
 
 __all__ = [
@@ -37,7 +38,7 @@ class SchemaFactory:
         exclude: Optional[List[str]] = None,
         skip_registry: bool = False
     ) -> Union[Type["ModelSchema"], Type["Schema"], None]:
-        from .model_schema import ModelSchema
+        from dantico.model_schema import ModelSchema
 
         name = name or model.__name__
 

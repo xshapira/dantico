@@ -45,7 +45,7 @@ def is_valid_name(name: str) -> None:
     """Helper to verify that provided name for choices is valid."""
     assert COMPILED_NAME_PATTERN.match(
         name
-    ), 'Names must match /{}/ but "{}" does not.'.format(NAME_PATTERN, name)
+    ), f'Names must match /{NAME_PATTERN}/ but "{name}" does not.'
 
 
 def choices_name_to_string(name: str) -> str:
@@ -53,7 +53,7 @@ def choices_name_to_string(name: str) -> str:
     try:
         is_valid_name(name)
     except AssertionError:
-        name = "A_%s" % name
+        name = f"A_{name}"
     return name
 
 
@@ -78,23 +78,21 @@ class FieldConversionProps:
     title: str
 
     def __init__(self, field: Field):
-        data = {}
         field_options = field.deconstruct()[3]  # 3 are the keywords
+        data = {
+            "description": force_str(
+                getattr(field, "help_text", field.verbose_name)
+            ).strip()
+        }
 
-        data["description"] = force_str(
-            getattr(field, "help_text", field.verbose_name)
-        ).strip()
         data["title"] = field.verbose_name.title()
-
         if not field.is_relation:
             data["blank"] = field_options.get("blank", False)
             data["is_null"] = field_options.get("null", False)
             data["max_length"] = field_options.get("max_length")
             data.update(alias=None)
-
         if field.is_relation and hasattr(field, "get_attname"):
             data["alias"] = field.get_attname()
-
         self.__dict__ = data
 
 
@@ -105,17 +103,14 @@ def django_to_pydantic_with_choices(
     depth: int = 0,
     skip_registry: bool = False,
 ) -> Tuple[Type, FieldInfo]:
-    converted = django_to_pydantic(
+    return django_to_pydantic(
         field, registry=registry, depth=depth, skip_registry=skip_registry
     )
-    return converted
 
 
 @singledispatch
 def django_to_pydantic(field: Field, **kwargs: Any) -> Tuple[Type, FieldInfo]:
-    raise Exception(
-        "Could not infer Django field {} ({})".format(field, field.__class__)
-    )
+    raise Exception(f"Could not infer Django field {field} ({field.__class__})")
 
 
 @no_type_check
