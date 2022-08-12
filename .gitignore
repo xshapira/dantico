@@ -95,3 +95,4 @@ Pipfile*
 .ropeproject/
 
 .DS_Store
+.sourcery.yaml

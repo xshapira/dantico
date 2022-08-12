@@ -42,7 +42,6 @@ COMPILED_NAME_PATTERN = re.compile(NAME_PATTERN)
 
 
 def is_valid_name(name: str) -> None:
-    """Helper to verify that provided name for choices is valid."""
     assert COMPILED_NAME_PATTERN.match(
         name
     ), f'Names must match /{NAME_PATTERN}/ but "{name}" does not.'
