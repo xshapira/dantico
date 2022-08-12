@@ -40,12 +40,22 @@ COMPILED_NAME_PATTERN = re.compile(NAME_PATTERN)
 
 
 def is_valid_name(name: str) -> None:
+    """Checks that the given choice name for choices is valid."""
     assert COMPILED_NAME_PATTERN.match(
         name
     ), f'Names must match /{NAME_PATTERN}/ but "{name}" does not.'
 
 
 def choices_name_to_string(name: str) -> str:
+    """
+    Convert the given Django choices name to a string,
+    which is used in the schema for serializing and deserializing model fields that have choices defined on them.
+    We do it because when you define a field with an Enum type as its validator, then you can't use strings as values for
+    the field's "choices", instead, you must use the Enum's member names.
+
+    :param name:str: Pass in the name of the choice that is being converted to a string
+    :return: The name of the choice if it is valid, otherwise it returns a string representation of the choice
+    """
     name = force_str(name)
     try:
         is_valid_name(name)
