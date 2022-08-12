@@ -1,9 +1,8 @@
 from typing import TYPE_CHECKING, Dict, Tuple, Type, Union
 
-from django.db.models import Model
-
 from dantico.schema import Schema
 from dantico.utils import is_valid_class, is_valid_django_model
+from django.db.models import Model
 
 if TYPE_CHECKING:
     from dantico.model_schema import ModelSchema

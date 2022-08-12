@@ -1,10 +1,8 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union, cast
 
-from django.db.models import Model
-
 from dantico.exceptions import ConfigError
-from dantico.schema_registry import SchemaRegister
-from dantico.schema_registry import registry as schema_registry
+from dantico.schema_registry import SchemaRegister, registry as schema_registry
+from django.db.models import Model
 
 if TYPE_CHECKING:
     from dantico.model_schema import ModelSchema

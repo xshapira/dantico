@@ -14,6 +14,13 @@ from typing import (
     no_type_check,
 )
 
+from dantico.exceptions import ConfigError
+from dantico.fields import django_to_pydantic_with_choices
+from dantico.getters import DjangoGetter
+from dantico.mixins import SchemaMixins
+from dantico.model_validators import ModelValidatorGroup
+from dantico.schema_registry import registry as global_registry
+from dantico.utils import compute_field_annotations
 from django.db.models import Field, ManyToManyRel, ManyToOneRel
 from pydantic import BaseConfig, BaseModel, PyObject
 from pydantic.class_validators import (
@@ -39,14 +46,6 @@ from pydantic.utils import (
     unique_list,
     validate_field_name,
 )
-
-from dantico.exceptions import ConfigError
-from dantico.fields import django_to_pydantic_with_choices
-from dantico.getters import DjangoGetter
-from dantico.mixins import SchemaMixins
-from dantico.model_validators import ModelValidatorGroup
-from dantico.schema_registry import registry as global_registry
-from dantico.utils import compute_field_annotations
 
 if TYPE_CHECKING:
     from pydantic.class_validators import ValidatorListDict
