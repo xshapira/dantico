@@ -1,16 +1,13 @@
 import inspect
 import logging
-from typing import TYPE_CHECKING, Any, Dict, Type
+from typing import Any, Dict, Type
 
 from dantico.exceptions import ConfigError
 from django.db import models
 from django.db.models import Model
 from pydantic.utils import is_valid_field
 
-if TYPE_CHECKING:
-    Dict[str, Any]
-
-__all__ = ["compute_field_annotations"]
+# __all__ = ["compute_field_annotations"]
 
 logger = logging.getLogger()
 

@@ -258,13 +258,13 @@ class ModelSchemaConfig(BaseConfig):
         ) - keys
         if invalid_include_exclude_fields:
             raise ConfigError(
-                f"Field(s) {invalid_include_exclude_fields} are not in model."
+                f'Field{"" if len(invalid_include_exclude_fields) == 1 else "s"}: {invalid_include_exclude_fields} {"is" if len(invalid_include_exclude_fields) == 1 else "are"} not in model.'
             )
         if ALL_FIELDS not in self.optional:
             invalid_options_fields = set(self.optional) - keys
             if invalid_options_fields:
                 raise ConfigError(
-                    f"Field(s) {invalid_options_fields} are not in model."
+                    f'Field{"" if len(invalid_options_fields) == 1 else "s"}: {invalid_options_fields} {"is" if len(invalid_options_fields) == 1 else "are"} not in model.'
                 )
 
     def is_field_in_optional(self, field_name: str) -> bool:
