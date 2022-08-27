@@ -263,7 +263,11 @@ class TestModelSchema:
         }
 
     def test_model_validator(self):
+
+
+
         class AuctionSchema(ModelSchema):
+
             class Config:
                 model = Auction
                 include = [
@@ -272,11 +276,14 @@ class TestModelSchema:
                 ]
 
             @model_validator("title")
-            def validate_title(cls, value):
+            def validate_title(self, value):
                 return f"{value} - value cleaned"
+
 
         auction = AuctionSchema(start_date="2022-07-06", title="MacBook Pro Mid 2015")
         assert "value cleaned" in auction.title
+
+
 
         class AuctionSchema2(ModelSchema):
             custom_field: str
@@ -289,8 +296,9 @@ class TestModelSchema:
                 ]
 
             @model_validator("title", "custom_field")
-            def validate_title(cls, value):
+            def validate_title(self, value):
                 return f"{value} - value cleaned"
+
 
         auction2 = AuctionSchema2(
             start_date="2022-07-06",
@@ -325,7 +333,11 @@ class TestModelSchema:
     def test_model_validator_not_used(self):
         with pytest.raises(ConfigError):
 
+
+
+
             class AuctionSchema1(ModelSchema):
+
                 class Config:
                     model = Auction
                     exclude = [
@@ -333,12 +345,17 @@ class TestModelSchema:
                     ]
 
                 @model_validator("start_date", "title")
-                def validate_title(cls, value):
+                def validate_title(self, value):
                     return f"{value} - value cleaned"  # pragma: no cover
+
 
         with pytest.raises(ConfigError):
 
+
+
+
             class AuctionSchema2(ModelSchema):
+
                 class Config:
                     model = Auction
                     include = [
@@ -346,7 +363,7 @@ class TestModelSchema:
                     ]
 
                 @model_validator("title", "invalid_field")
-                def validate_title(cls, value):
+                def validate_title(self, value):
                     return f"{value} - value cleaned"  # pragma: no cover
 
     def test_factory_functions(self):
@@ -421,7 +438,11 @@ class TestModelSchema:
     def test_validator_without_field(self):
         with pytest.raises(ConfigError):
 
+
+
+
             class AuctionSchema1(ModelSchema):
+
                 class Config:
                     model = Auction
                     include = [
@@ -429,13 +450,17 @@ class TestModelSchema:
                     ]
 
                 @model_validator()
-                def validate_title(cls, value):  # pragma: no cover
+                def validate_title(self, value):  # pragma: no cover
                     return f"{value} - value cleaned"
 
     def test_pydantic_validator_decorator(self):
         with pytest.raises(ConfigError):
 
+
+
+
             class AuctionSchema(ModelSchema):
+
                 class Config:
                     model = Auction
                     include = [
@@ -443,7 +468,7 @@ class TestModelSchema:
                     ]
 
                 @model_validator
-                def validate_title(cls, value):  # pragma: no cover
+                def validate_title(self, value):  # pragma: no cover
                     return f"{value} - value cleaned"
 
     def test_model_field_with_underscore(self):
