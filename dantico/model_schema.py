@@ -229,8 +229,7 @@ class ModelSchemaConfig(BaseConfig):
     def clone_field(cls, field: FieldInfo, **kwargs: Any) -> FieldInfo:
         field_dict = dict(field.__repr_args__())
         field_dict.update(**kwargs)
-        new_field = FieldInfo(**field_dict)  # type: ignore
-        return new_field
+        return FieldInfo(**field_dict)
 
     def model_fields(self) -> Iterator[Field]:
         """Return iterator with all the fields that can be part of a schema."""
@@ -258,16 +257,17 @@ class ModelSchemaConfig(BaseConfig):
 
     def check_invalid_keys(self, **field_names: Dict[str, Any]) -> None:
         keys = field_names.keys()
-        invalid_include_exclude_fields = (
-            set(self.include or []) | set(self.exclude or [])
-        ) - keys
-        if invalid_include_exclude_fields:
+        if (
+            invalid_include_exclude_fields := (
+                set(self.include or []) | set(self.exclude or [])
+            )
+            - keys
+        ):
             raise ConfigError(
                 f'Field{"" if len(invalid_include_exclude_fields) == 1 else "s"}: {invalid_include_exclude_fields} {"is" if len(invalid_include_exclude_fields) == 1 else "are"} not in model.'
             )
         if ALL_FIELDS not in self.optional:
-            invalid_options_fields = set(self.optional) - keys
-            if invalid_options_fields:
+            if invalid_options_fields := set(self.optional) - keys:
                 raise ConfigError(
                     f'Field{"" if len(invalid_options_fields) == 1 else "s"}: {invalid_options_fields} {"is" if len(invalid_options_fields) == 1 else "are"} not in model.'
                 )
