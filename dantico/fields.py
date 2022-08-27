@@ -67,12 +67,17 @@ def choices_name_to_string(name: str) -> str:
 def get_choices(
     choices: Iterable[Union[Tuple[Any, Any], Tuple[str, Iterable[Tuple[Any, Any]]]]]
 ) -> Iterator[Tuple[str, str, str]]:
-    for value, help_text in choices:
-        if isinstance(help_text, (tuple, list)):
-            yield from get_choices(help_text)
+    for value, _options in choices:
+        try:
+            label, name = _options  # unpack
+        except ValueError:
+            label, name = _options, None  # unpack
+
+        if name:
+            yield from get_choices(choices=[(value, label)])
         else:
             name = choices_name_to_string(value)
-            description = force_str(help_text)
+            description = force_str(label)
             yield name, value, description
 
 
@@ -116,7 +121,9 @@ def django_to_pydantic_with_choices(
 
 
 @singledispatch
-def django_to_pydantic(field: Field, **kwargs: Any) -> Tuple[Type, FieldInfo]:
+def django_to_pydantic(
+    field: Field, **kwargs: Any
+) -> Tuple[Type, FieldInfo]:  # pragma: no cover # an abstract function
     raise Exception(f"Could not infer Django field {field} ({field.__class__})")
 
 
@@ -367,7 +374,9 @@ def time_to_string(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldI
 def one_to_one_field_to_django_model(
     field: Field, registry=None, depth=0, **kwargs: Dict[str, Any]
 ) -> Tuple[Type, FieldInfo]:
-    return construct_relational_field_info(field, registry=registry, depth=depth)
+    return construct_relational_field_info(
+        field, registry=registry, depth=depth
+    )  # pragma: no cover # not yet implemented
 
 
 @no_type_check
