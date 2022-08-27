@@ -28,14 +28,18 @@ def compute_field_annotations(
         if isinstance(field_definition, tuple):
             try:
                 field_annotation, field_value = field_definition
-            except ValueError as e:
+            except ValueError as e:  # pragma: no cover
+                # really?
+                # `field_definition` is always a tuple with two elements
                 raise ConfigError(
                     "field definitions should either be a tuple of (<type>, <default>) or just a "
                     "default value, unfortunately this means tuples as "
                     "default values are not allowed"
                 ) from e
         else:
-            field_annotation, field_value = None, field_definition
+            # really?
+            # `field_definition` is always a tuple with two elements
+            field_annotation, field_value = None, field_definition  # pragma: no cover
 
         if field_annotation:
             annotations[field_name] = field_annotation

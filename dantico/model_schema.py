@@ -21,7 +21,7 @@ from dantico.mixins import SchemaMixins
 from dantico.model_validators import ModelValidatorGroup
 from dantico.schema_registry import registry as global_registry
 from dantico.utils import compute_field_annotations
-from django.db.models import Field, ManyToManyRel, ManyToOneRel
+from django.db.models import Field, ManyToManyRel, ManyToOneRel, Model as DJModel
 from pydantic import BaseConfig, BaseModel, PyObject
 from pydantic.class_validators import (
     extract_root_validators,
@@ -246,6 +246,11 @@ class ModelSchemaConfig(BaseConfig):
         if not self.model:
             raise ConfigError("Invalid Configuration. 'model' is required")
 
+        if not issubclass(self.model, DJModel):
+            raise ConfigError(
+                f"'{self.model.__class__.__name__}' must be valid Django model"
+            )
+
         if self.include and self.exclude:
             raise ConfigError(
                 "Only one of 'include' or 'exclude' should be set in configuration."
@@ -303,78 +308,70 @@ class ModelSchemaMetaclass(ModelMetaclass):
         if bases == (SchemaBaseModel,) or not namespace.get("Config"):
             return cls
 
-        if issubclass(cls, ModelSchema):
-            config = namespace["Config"]
-            config_instance = ModelSchemaConfig(name, config)
-            annotations = namespace.get("__annotations__", {})
+        # `cls` will be subclass of `ModelSchema` in all other case
+        config = namespace["Config"]
+        config_instance = ModelSchemaConfig(name, config)
+        annotations = namespace.get("__annotations__", {})
 
-            try:
-                fields = list(config_instance.model_fields())
-            except AttributeError as exc:
-                raise ConfigError(
-                    f"{exc} (Is `Config.model` a valid Django model class?)"
-                )
+        fields = list(config_instance.model_fields())
 
-            field_values, _seen = {}, set()
+        field_values, _seen = {}, set()
 
-            all_fields = {f.name: f for f in fields}
-            config_instance.check_invalid_keys(**all_fields)
+        all_fields = {f.name: f for f in fields}
+        config_instance.check_invalid_keys(**all_fields)
 
-            for field in chain(fields, annotations.copy()):
-                field_name = getattr(
-                    field, "name", getattr(field, "related_name", field)
-                )
+        for field in chain(fields, annotations.copy()):
+            field_name = getattr(field, "name", getattr(field, "related_name", field))
 
-                if (
-                    field_name in _seen
+            if (
+                field_name in _seen
+                or (
+                    (
+                        config_instance.include
+                        and field_name not in config_instance.include
+                    )
                     or (
-                        (
-                            config_instance.include
-                            and field_name not in config_instance.include
-                        )
-                        or (
-                            config_instance.exclude
-                            and field_name in config_instance.exclude
-                        )
+                        config_instance.exclude
+                        and field_name in config_instance.exclude
                     )
-                    and field_name not in annotations
+                )
+                and field_name not in annotations
+            ):
+                continue
+
+            _seen.add(field_name)
+            if field_name in annotations and field_name in namespace:
+
+                python_type = annotations.pop(field_name)
+                pydantic_field = namespace[field_name]
+                if (
+                    hasattr(pydantic_field, "default_factory")
+                    and pydantic_field.default_factory
                 ):
-                    continue
+                    pydantic_field = pydantic_field.default_factory()
 
-                _seen.add(field_name)
-                if field_name in annotations and field_name in namespace:
+            elif field_name in annotations:
+                python_type = annotations.pop(field_name)
+                pydantic_field = (
+                    None if Optional[python_type] == python_type else Ellipsis
+                )
 
-                    python_type = annotations.pop(field_name)
-                    pydantic_field = namespace[field_name]
-                    if (
-                        hasattr(pydantic_field, "default_factory")
-                        and pydantic_field.default_factory
-                    ):
-                        pydantic_field = pydantic_field.default_factory()
-
-                elif field_name in annotations:
-                    python_type = annotations.pop(field_name)
-                    pydantic_field = (
-                        None if Optional[python_type] == python_type else Ellipsis
+            else:
+                python_type, pydantic_field = django_to_pydantic_with_choices(
+                    field,
+                    registry=config_instance.registry,
+                    depth=config_instance.depth,
+                    skip_registry=config_instance.skip_registry,
+                )
+                if config_instance.is_field_in_optional(field_name):
+                    pydantic_field = ModelSchemaConfig.clone_field(
+                        field=pydantic_field, default=None, default_factory=None
                     )
 
-                else:
-                    python_type, pydantic_field = django_to_pydantic_with_choices(
-                        field,
-                        registry=config_instance.registry,
-                        depth=config_instance.depth,
-                        skip_registry=config_instance.skip_registry,
-                    )
-                    if config_instance.is_field_in_optional(field_name):
-                        pydantic_field = ModelSchemaConfig.clone_field(
-                            field=pydantic_field, default=None, default_factory=None
-                        )
-
-                field_values[field_name] = (python_type, pydantic_field)
-            cls = update_class_missing_fields(
-                cls, list(bases), compute_field_annotations(namespace, **field_values)
-            )
-            return cls
+            field_values[field_name] = (python_type, pydantic_field)
+        cls = update_class_missing_fields(
+            cls, list(bases), compute_field_annotations(namespace, **field_values)
+        )
         return cls
 
 
