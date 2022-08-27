@@ -280,7 +280,7 @@ print(json_output)
 
 ### Optional model fields
 
-We can also specify model fields to mark as `optional`. In the next example `age` schema field becomes optional:
+We can also specify model fields to mark as `optional`.
 
 ```python
 # schemas.py
@@ -293,7 +293,7 @@ class UserSchema(ModelSchema):
     class Config:
         model = User
         exclude = ["password", "languages"]
-        optional = ["age"]
+        optional = ["age"] # 'age' schema field is now optional
 
 
 json_output = json.dumps(UserSchema.schema(), indent=4)
@@ -641,7 +641,7 @@ class UserSchema(ModelSchema):
 
         :param cls: Access the class of the object that is being validated
         :param v: Validate the value
-        :return: The result of the name_must_be_unique function
+        :return: The result of the username_must_be_unique function
         """
 
         @sync_to_async
