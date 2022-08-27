@@ -5,7 +5,7 @@ import pytest
 from dantico import ModelSchema, SchemaFactory, model_validator
 from dantico.exceptions import ConfigError
 from django.db import models
-from pydantic import Field, validator
+from pydantic import Field
 
 from tests.conf import JSON_FIELD_COMPATIBILITY, TEXT_CHOICES_COMPATIBILITY
 from tests.models import Auction, User

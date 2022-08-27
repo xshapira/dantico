@@ -9,7 +9,6 @@ from typing import (
     Optional,
     Set,
     Type,
-    Union,
     cast,
     no_type_check,
 )
@@ -22,7 +21,7 @@ from dantico.model_validators import ModelValidatorGroup
 from dantico.schema_registry import registry as global_registry
 from dantico.utils import compute_field_annotations
 from django.db.models import Field, ManyToManyRel, ManyToOneRel, Model as DJModel
-from pydantic import BaseConfig, BaseModel, PyObject
+from pydantic import BaseConfig, BaseModel
 from pydantic.class_validators import (
     extract_root_validators,
     extract_validators,
@@ -36,13 +35,12 @@ from pydantic.main import (
     generate_hash_function,
     validate_custom_root_type,
 )
-from pydantic.typing import get_args, get_origin, is_classvar, resolve_annotations
+from pydantic.typing import is_classvar, resolve_annotations
 from pydantic.utils import (
     ROOT_KEY,
     ClassAttribute,
     generate_model_signature,
     is_valid_field,
-    lenient_issubclass,
     unique_list,
     validate_field_name,
 )
