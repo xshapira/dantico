@@ -31,12 +31,45 @@ from pydantic.fields import FieldInfo, Undefined
 if TYPE_CHECKING:
     from dantico.model_schema import ModelSchema
 
-
 TModel = TypeVar("TModel")
-
 
 NAME_PATTERN = r"^[_a-zA-Z][_a-zA-Z0-9]*$"
 COMPILED_NAME_PATTERN = re.compile(NAME_PATTERN)
+
+_Conf = Tuple[Any, Dict]
+_ComplexPyType = Union[Any, _Conf]
+
+FIELD_MAP: Dict[str, _ComplexPyType] = {
+    "PositiveBigIntegerField": int,
+    "CommaSeparatedIntegerField": str,
+    "ImageField": str,
+    "BigAutoField": int,
+    "CharField": str,
+    "TextField": str,
+    "SlugField": str,
+    "FileField": str,
+    "FilePathField": str,
+    "EmailField": (EmailStr, {"is_custom_type": True}),
+    "URLField": AnyUrl,
+    "AutoField": int,
+    "UUIDField": UUID,
+    "PositiveIntegerField": int,
+    "PositiveSmallIntegerField": int,
+    "SmallIntegerField": int,
+    "BigIntegerField": int,
+    "IntegerField": int,
+    "BinaryField": bytes,
+    "IPAddressField": IPvAnyAddress,
+    "GenericIPAddressField": IPvAnyAddress,
+    "FloatField": float,
+    "DecimalField": Decimal,
+    "BooleanField": bool,
+    "NullBooleanField": bool,
+    "DurationField": datetime.timedelta,
+    "DateTimeField": datetime.datetime,
+    "DateField": datetime.date,
+    "TimeField": datetime.time,
+}
 
 
 def is_valid_name(name: str) -> None:
@@ -124,7 +157,12 @@ def django_to_pydantic_with_choices(
 def django_to_pydantic(
     field: Field, **kwargs: Any
 ) -> Tuple[Type, FieldInfo]:  # pragma: no cover # an abstract function
-    raise Exception(f"Could not infer Django field {field} ({field.__class__})")
+    _py_type: Union[type, Tuple[type, Dict]] = FIELD_MAP[field.__class__.__name__]
+    conf: Dict = {}
+    if isinstance(_py_type, tuple):
+        _py_type, conf = _py_type
+
+    return construct_field_info(_py_type, field, **conf)  # type: ignore
 
 
 @no_type_check
@@ -249,124 +287,6 @@ def construct_field_info(
             max_length=None if is_custom_type else field_props.max_length,
         ),
     )
-
-
-@no_type_check
-@django_to_pydantic.register(models.CharField)
-@django_to_pydantic.register(models.TextField)
-@django_to_pydantic.register(models.SlugField)
-@django_to_pydantic.register(models.GenericIPAddressField)
-@django_to_pydantic.register(models.FileField)
-@django_to_pydantic.register(models.FilePathField)
-def field_to_string(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(str, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.EmailField)
-def field_to_email_string(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(EmailStr, field, is_custom_type=True)
-
-
-@no_type_check
-@django_to_pydantic.register(models.URLField)
-def field_to_url_string(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(AnyUrl, field, is_custom_type=True)
-
-
-@no_type_check
-@django_to_pydantic.register(models.AutoField)
-def field_to_id(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(int, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.UUIDField)
-def field_to_uuid(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(UUID, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.PositiveIntegerField)
-@django_to_pydantic.register(models.PositiveSmallIntegerField)
-@django_to_pydantic.register(models.SmallIntegerField)
-@django_to_pydantic.register(models.BigIntegerField)
-@django_to_pydantic.register(models.IntegerField)
-def field_to_int(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(int, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.BinaryField)
-def field_to_byte(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(bytes, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.IPAddressField)
-@django_to_pydantic.register(models.GenericIPAddressField)
-def field_to_ipaddress(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(IPvAnyAddress, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.FloatField)
-def field_to_float(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(float, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.DecimalField)
-def field_to_decimal(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(Decimal, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.BooleanField)
-def field_to_boolean(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(bool, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.NullBooleanField)
-def field_to_null_boolean(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(bool, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.DurationField)
-def field_to_time_delta(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(datetime.timedelta, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.DateTimeField)
-def datetime_to_string(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(datetime.datetime, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.DateField)
-def date_to_string(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(datetime.date, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.TimeField)
-def time_to_string(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(datetime.time, field)
 
 
 @no_type_check
