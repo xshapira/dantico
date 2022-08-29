@@ -9,6 +9,7 @@ from dantico.exceptions import ConfigError
 # from django.contrib.postgres import fields as ps_fields
 from django.db import models
 from django.db.models import Manager
+from pydantic import ValidationError
 
 from tests.models import Auction
 
@@ -79,6 +80,7 @@ def test_all_fields():
         time_field = models.TimeField()
         url_field = models.URLField()
         uuid_field = models.UUIDField()
+
         # arrayfield = ps_fields.ArrayField(models.CharField())
         # cicharfield = ps_fields.CICharField()
         # ciemailfield = ps_fields.CIEmailField()
@@ -428,3 +430,65 @@ def test_many_to_many():
     data = CharacterSchema.from_orm(character).dict()
 
     assert data == {"id": 1, "many_to_many": [1]}
+
+
+def test_many_to_many_pure_type():
+    class Movie1(models.Model):
+        name = models.CharField()
+
+        class Meta:
+            app_label = "tests"
+
+    class Character1(models.Model):
+        many_to_many = models.ManyToManyField(Movie1, blank=True)
+
+        class Meta:
+            app_label = "tests"
+
+    class CharacterSchema(ModelSchema):
+        class Config:
+            model = Character1
+
+    # Mock database data:
+    movie = 123
+
+    many_to_many = Mock(spec=Manager)
+    many_to_many.all = lambda: [movie]
+
+    character = Mock()
+    character.id = 1
+    character.many_to_many = many_to_many
+
+    data = CharacterSchema.from_orm(character).dict()
+    assert data == {"id": 1, "many_to_many": [123]}
+
+
+def test_many_to_many_error():
+    class Movie2(models.Model):
+        name = models.CharField()
+
+        class Meta:
+            app_label = "tests"
+
+    class Character2(models.Model):
+        many_to_many = models.ManyToManyField(Movie2, blank=True)
+
+        class Meta:
+            app_label = "tests"
+
+    class CharacterSchema(ModelSchema):
+        class Config:
+            model = Character2
+
+    # Mock database data:
+    movie = "something"
+
+    many_to_many = Mock(spec=Manager)
+    many_to_many.all = lambda: [movie]
+
+    character = Mock()
+    character.id = 1
+    character.many_to_many = many_to_many
+
+    with pytest.raises(ValidationError):
+        CharacterSchema.from_orm(character).dict()
