@@ -1,6 +1,6 @@
 """Tools to convert Django ORM models to Pydantic models"""
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 
 from dantico.factory import SchemaFactory
 from dantico.model_schema import ModelSchema
