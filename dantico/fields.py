@@ -183,14 +183,13 @@ def create_many_to_many_link_type(
             :param v: validate the value passed to the function
             :return: the value if it is of the correct type, otherwise it raises a `ValueError`.
             """
-            try:
-                if isinstance(v, type_):
-                    return v
+            if isinstance(v, type_):
+                return v
 
-                if hasattr(v, "pk") and isinstance(v.pk, type_):
-                    return v.pk
-            except ValueError:
-                return "Incorrect type"
+            if hasattr(v, "pk") and isinstance(v.pk, type_):
+                return v.pk
+
+            raise ValueError("Incorrect type")
 
     return ManyToManyLink
 
