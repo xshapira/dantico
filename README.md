@@ -28,6 +28,16 @@ The key features are:
 pip install dantico
 ```
 
+## Contents
+ <!-- no toc -->
+- [Basic usage](#basic)
+- [Excluding and including model fields](#excluding-and-including-model-fields)
+- [Optional model fields](#optional-model-fields)
+- [Introspect the related objects](#introspect-the-related-objects)
+- [Schema customization](#schema-customization)
+- [Field validator](#field-validator)
+<br/><br/>
+
 ## Usage
 
 Here are a few examples of what you can do with *dantico*:
@@ -156,6 +166,10 @@ print(json_output)
 }
 ```
 
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
+
 ### Excluding and including model fields
 
 By default *dantico* include all the fields from the Django model. As a rule of thumb, always use the `include` or `exclude` attribute to explicitly define a list of fields that you want to be visible in your API. **Note that you cannot use both at the same time**.
@@ -278,6 +292,10 @@ print(json_output)
 
 ```
 
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
+
 ### Optional model fields
 
 We can also specify model fields to mark as `optional`.
@@ -350,6 +368,10 @@ print(json_output)
     }
 }
 ```
+
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
 
 ### Introspect the related objects
 
@@ -543,6 +565,10 @@ print(json_output)
 }
 ```
 
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
+
 ### Schema customization
 
 Docstrings and titles can be used as descriptive text in the schema output.
@@ -610,6 +636,10 @@ print(json_output)
 }
 ```
 
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
+
 ### Field validator
 
 Custom validation is not an easy task in this case. But we still can achieve it by using threads.
@@ -657,6 +687,10 @@ class UserSchema(ModelSchema):
 
         return result
 ```
+
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
 
 ## License
 
