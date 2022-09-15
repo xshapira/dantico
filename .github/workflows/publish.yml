@@ -29,4 +29,3 @@ jobs:
       - name: Publish
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-        run: bash scripts/publish.sh
