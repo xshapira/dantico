@@ -31,16 +31,51 @@ from pydantic.fields import FieldInfo, Undefined
 if TYPE_CHECKING:
     from dantico.model_schema import ModelSchema
 
-
 TModel = TypeVar("TModel")
-
 
 NAME_PATTERN = r"^[_a-zA-Z][_a-zA-Z0-9]*$"
 COMPILED_NAME_PATTERN = re.compile(NAME_PATTERN)
 
+_Conf = Tuple[Any, Dict]
+_ComplexPyType = Union[Any, _Conf]
+
+FIELD_MAP: Dict[str, _ComplexPyType] = {
+    "PositiveBigIntegerField": int,
+    "CommaSeparatedIntegerField": str,
+    "ImageField": str,
+    "BigAutoField": int,
+    "CharField": str,
+    "TextField": str,
+    "SlugField": str,
+    "FileField": str,
+    "FilePathField": str,
+    "EmailField": (EmailStr, {"is_custom_type": True}),
+    "URLField": AnyUrl,
+    "AutoField": int,
+    "UUIDField": UUID,
+    "PositiveIntegerField": int,
+    "PositiveSmallIntegerField": int,
+    "SmallIntegerField": int,
+    "BigIntegerField": int,
+    "IntegerField": int,
+    "BinaryField": bytes,
+    "IPAddressField": IPvAnyAddress,
+    "GenericIPAddressField": IPvAnyAddress,
+    "FloatField": float,
+    "DecimalField": Decimal,
+    "BooleanField": bool,
+    "NullBooleanField": bool,
+    "DurationField": datetime.timedelta,
+    "DateTimeField": datetime.datetime,
+    "DateField": datetime.date,
+    "TimeField": datetime.time,
+}
+
 
 def is_valid_name(name: str) -> None:
-    """Checks that the given choice name for choices is valid."""
+    """
+    Checks that the given choice name for choices is valid.
+    """
     assert COMPILED_NAME_PATTERN.match(
         name
     ), f'Names must match /{NAME_PATTERN}/ but "{name}" does not.'
@@ -48,13 +83,11 @@ def is_valid_name(name: str) -> None:
 
 def choices_name_to_string(name: str) -> str:
     """
-    Convert the given Django choices name to a string,
-    which is used in the schema for serializing and deserializing model fields that have choices defined on them.
-    We do it because when you define a field with an Enum type as its validator, then you can't use strings as values for
-    the field's "choices", instead, you must use the Enum's member names.
+    Convert the given Django choices name to a string, which is used in the schema for serializing and deserializing model fields that have choices defined on them. We do it because when you define a field with an Enum type as its validator, then you can't use strings as values for the field's "choices", instead, you must use the Enum's member names.
 
-    :param name:str: Pass in the name of the choice that is being converted to a string
-    :return: The name of the choice if it is valid, otherwise it returns a string representation of the choice
+    :param name:str: pass in the name of the choice that is being converted
+    to a string
+    :return: the name of the choice if it is valid, otherwise it returns a string representation of the choice
     """
     name = force_str(name)
     try:
@@ -67,12 +100,17 @@ def choices_name_to_string(name: str) -> str:
 def get_choices(
     choices: Iterable[Union[Tuple[Any, Any], Tuple[str, Iterable[Tuple[Any, Any]]]]]
 ) -> Iterator[Tuple[str, str, str]]:
-    for value, help_text in choices:
-        if isinstance(help_text, (tuple, list)):
-            yield from get_choices(help_text)
+    for value, _options in choices:
+        try:
+            label, name = _options  # unpack
+        except ValueError:
+            label, name = _options, None  # unpack
+
+        if name:
+            yield from get_choices(choices=[(value, label)])
         else:
             name = choices_name_to_string(value)
-            description = force_str(help_text)
+            description = force_str(label)
             yield name, value, description
 
 
@@ -116,22 +154,43 @@ def django_to_pydantic_with_choices(
 
 
 @singledispatch
-def django_to_pydantic(field: Field, **kwargs: Any) -> Tuple[Type, FieldInfo]:
-    raise Exception(f"Could not infer Django field {field} ({field.__class__})")
+def django_to_pydantic(
+    field: Field, **kwargs: Any
+) -> Tuple[Type, FieldInfo]:  # pragma: no cover # an abstract function
+    _py_type: Union[type, Tuple[type, Dict]] = FIELD_MAP[field.__class__.__name__]
+    conf: Dict = {}
+    if isinstance(_py_type, tuple):
+        _py_type, conf = _py_type
+
+    return construct_field_info(_py_type, field, **conf)  # type: ignore
 
 
 @no_type_check
-def create_m2m_link_type(type_: Type[TModel]) -> Type[TModel]:
-    class M2MLink(type_):  # type: ignore
+def create_many_to_many_link_type(
+    type_: Type[TModel], related_model: models.Model
+) -> Type[TModel]:
+    class ManyToManyLink(type_):  # type: ignore
         @classmethod
         def __get_validators__(cls):
             yield cls.validate
 
         @classmethod
         def validate(cls, v):
-            return v.pk
+            """
+            The validate function takes in a type and returns it. This is to ensure that the value is of a certain type. If the value is an instance of the type, return it. If the value is an instance of a model, return the primary key. Otherwise, raise a `ValueError`.
 
-    return M2MLink
+            :param cls: pass the class of the model
+            :param v: validate the value passed to the function
+            :return: the value if it is of the correct type, otherwise it raises a `ValueError`.
+            """
+            if isinstance(v, type_):
+                return v
+
+            if hasattr(v, "pk") and isinstance(v.pk, type_):
+                return v.pk
+            raise ValueError("Incorrect type")
+
+    return ManyToManyLink
 
 
 @no_type_check
@@ -181,8 +240,10 @@ def construct_relational_field_info(
 
     python_type = inner_type
     if field.one_to_many or field.many_to_many:
-        m2m_type = create_m2m_link_type(inner_type)
-        python_type = List[m2m_type]  # type: ignore
+        many_to_many_type = create_many_to_many_link_type(
+            inner_type, field.related_model
+        )
+        python_type = List[many_to_many_type]  # type: ignore
 
     field_info = FieldInfo(
         default=default,
@@ -245,129 +306,13 @@ def construct_field_info(
 
 
 @no_type_check
-@django_to_pydantic.register(models.CharField)
-@django_to_pydantic.register(models.TextField)
-@django_to_pydantic.register(models.SlugField)
-@django_to_pydantic.register(models.GenericIPAddressField)
-@django_to_pydantic.register(models.FileField)
-@django_to_pydantic.register(models.FilePathField)
-def field_to_string(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(str, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.EmailField)
-def field_to_email_string(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(EmailStr, field, is_custom_type=True)
-
-
-@no_type_check
-@django_to_pydantic.register(models.URLField)
-def field_to_url_string(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(AnyUrl, field, is_custom_type=True)
-
-
-@no_type_check
-@django_to_pydantic.register(models.AutoField)
-def field_to_id(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(int, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.UUIDField)
-def field_to_uuid(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(UUID, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.PositiveIntegerField)
-@django_to_pydantic.register(models.PositiveSmallIntegerField)
-@django_to_pydantic.register(models.SmallIntegerField)
-@django_to_pydantic.register(models.BigIntegerField)
-@django_to_pydantic.register(models.IntegerField)
-def field_to_int(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(int, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.BinaryField)
-def field_to_byte(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(bytes, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.IPAddressField)
-@django_to_pydantic.register(models.GenericIPAddressField)
-def field_to_ipaddress(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(IPvAnyAddress, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.FloatField)
-def field_to_float(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(float, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.DecimalField)
-def field_to_decimal(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(Decimal, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.BooleanField)
-def field_to_boolean(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(bool, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.NullBooleanField)
-def field_to_null_boolean(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(bool, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.DurationField)
-def field_to_time_delta(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(datetime.timedelta, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.DateTimeField)
-def datetime_to_string(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(datetime.datetime, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.DateField)
-def date_to_string(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(datetime.date, field)
-
-
-@no_type_check
-@django_to_pydantic.register(models.TimeField)
-def time_to_string(field: Field, **kwargs: Dict[str, Any]) -> Tuple[Type, FieldInfo]:
-    return construct_field_info(datetime.time, field)
-
-
-@no_type_check
 @django_to_pydantic.register(models.OneToOneRel)
 def one_to_one_field_to_django_model(
     field: Field, registry=None, depth=0, **kwargs: Dict[str, Any]
 ) -> Tuple[Type, FieldInfo]:
-    return construct_relational_field_info(field, registry=registry, depth=depth)
+    return construct_relational_field_info(
+        field, registry=registry, depth=depth
+    )  # pragma: no cover # not yet implemented
 
 
 @no_type_check

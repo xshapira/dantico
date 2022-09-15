@@ -28,6 +28,16 @@ The key features are:
 pip install dantico
 ```
 
+## Contents
+ <!-- no toc -->
+- [Basic usage](#basic)
+- [Excluding and including model fields](#excluding-and-including-model-fields)
+- [Optional model fields](#optional-model-fields)
+- [Introspect the related objects](#introspect-the-related-objects)
+- [Schema customization](#schema-customization)
+- [Field validator](#field-validator)
+<br/><br/>
+
 ## Usage
 
 Here are a few examples of what you can do with *dantico*:
@@ -156,6 +166,10 @@ print(json_output)
 }
 ```
 
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
+
 ### Excluding and including model fields
 
 By default *dantico* include all the fields from the Django model. As a rule of thumb, always use the `include` or `exclude` attribute to explicitly define a list of fields that you want to be visible in your API. **Note that you cannot use both at the same time**.
@@ -278,9 +292,13 @@ print(json_output)
 
 ```
 
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
+
 ### Optional model fields
 
-We can also specify model fields to mark as `optional`. In the next example `age` schema field becomes optional:
+We can also specify model fields to mark as `optional`.
 
 ```python
 # schemas.py
@@ -293,7 +311,7 @@ class UserSchema(ModelSchema):
     class Config:
         model = User
         exclude = ["password", "languages"]
-        optional = ["age"]
+        optional = ["age"] # 'age' schema field is now optional
 
 
 json_output = json.dumps(UserSchema.schema(), indent=4)
@@ -350,6 +368,10 @@ print(json_output)
     }
 }
 ```
+
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
 
 ### Introspect the related objects
 
@@ -543,6 +565,10 @@ print(json_output)
 }
 ```
 
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
+
 ### Schema customization
 
 Docstrings and titles can be used as descriptive text in the schema output.
@@ -610,6 +636,10 @@ print(json_output)
 }
 ```
 
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
+
 ### Field validator
 
 Custom validation is not an easy task in this case. But we still can achieve it by using threads.
@@ -618,6 +648,7 @@ Because we define a validator to validate fields on inheriting models, we should
 
 ```python
 # schemas.py
+
 import asyncio
 import concurrent.futures
 
@@ -641,7 +672,7 @@ class UserSchema(ModelSchema):
 
         :param cls: Access the class of the object that is being validated
         :param v: Validate the value
-        :return: The result of the name_must_be_unique function
+        :return: The result of the username_must_be_unique function
         """
 
         @sync_to_async
@@ -656,6 +687,10 @@ class UserSchema(ModelSchema):
 
         return result
 ```
+
+<div align="right">
+    <b><a href="#contents">⬆️ Back To Top</a></b>
+</div>
 
 ## License
 

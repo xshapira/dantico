@@ -1,10 +1,10 @@
 import inspect
 import logging
-from typing import Any, Dict, Type
+from typing import Any, Dict, Tuple, Type
 
-from dantico.exceptions import ConfigError
 from django.db import models
 from django.db.models import Model
+from pydantic.fields import FieldInfo
 from pydantic.utils import is_valid_field
 
 # __all__ = ["compute_field_annotations"]
@@ -14,7 +14,7 @@ logger = logging.getLogger()
 
 def compute_field_annotations(
     namespace: "Dict[str, Any]",
-    **field_definitions: Any,
+    **field_definitions: Dict[str, Tuple[Type, FieldInfo]],
 ) -> "Dict[str, Any]":
 
     fields = {}
@@ -25,17 +25,7 @@ def compute_field_annotations(
             logger.debug(
                 f'fields may not start with an underscore, ignoring "{field_name}"'
             )
-        if isinstance(field_definition, tuple):
-            try:
-                field_annotation, field_value = field_definition
-            except ValueError as e:
-                raise ConfigError(
-                    "field definitions should either be a tuple of (<type>, <default>) or just a "
-                    "default value, unfortunately this means tuples as "
-                    "default values are not allowed"
-                ) from e
-        else:
-            field_annotation, field_value = None, field_definition
+        field_annotation, field_value = field_definition
 
         if field_annotation:
             annotations[field_name] = field_annotation
@@ -48,7 +38,7 @@ def compute_field_annotations(
 
 
 def is_valid_django_model(model: Type[Model]) -> bool:
-    return is_valid_class(model) and issubclass(model, models.Model)
+    return issubclass(model, models.Model)
 
 
 def is_valid_class(object: type) -> bool:

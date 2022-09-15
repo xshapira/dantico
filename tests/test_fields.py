@@ -4,10 +4,14 @@ from unittest.mock import Mock
 import django
 import pytest
 from dantico import ModelSchema
+from dantico.exceptions import ConfigError
 
 # from django.contrib.postgres import fields as ps_fields
 from django.db import models
 from django.db.models import Manager
+from pydantic import ValidationError
+
+from tests.models import Auction
 
 
 def test_inheritance():
@@ -76,6 +80,7 @@ def test_all_fields():
         time_field = models.TimeField()
         url_field = models.URLField()
         uuid_field = models.UUIDField()
+
         # arrayfield = ps_fields.ArrayField(models.CharField())
         # cicharfield = ps_fields.CICharField()
         # ciemailfield = ps_fields.CIEmailField()
@@ -212,6 +217,50 @@ def test_all_fields():
     }
 
 
+def test_fields_with_choices():
+    class ChoiceFieldsModel(models.Model):
+        FRAMEWORK_CHOICES = [
+            ("1", "Django"),
+            ("2", "FastAPI"),
+            ("3", ("Flask", "FLASK")),
+        ]
+        char_field = models.CharField(choices=FRAMEWORK_CHOICES)
+
+    class ChoiceFieldsSchema(ModelSchema):
+        class Config:
+            model = ChoiceFieldsModel
+
+    assert ChoiceFieldsSchema.schema() == {
+        "title": "ChoiceFieldsSchema",
+        "type": "object",
+        "properties": {
+            "id": {"title": "Id", "extra": {}, "type": "integer"},
+            "char_field": {
+                "title": "Char Field",
+                "allOf": [{"$ref": "#/definitions/CharFieldEnum"}],
+            },
+        },
+        "required": ["char_field"],
+        "definitions": {
+            "CharFieldEnum": {
+                "title": "CharFieldEnum",
+                "description": "An enumeration.",
+                "enum": ["1", "2", "3"],
+            }
+        },
+    }
+
+
+def test_fields_with_include_and_exclude():
+    with pytest.raises(ConfigError):
+
+        class AuctionSchema(ModelSchema):
+            class Config:
+                model = Auction
+                include = ["title"]
+                exclude = ["start_date"]
+
+
 def test_big_auto_field():
     # Primary keys are optional fields when include = __all__
     class ModelBigAuto(models.Model):
@@ -305,7 +354,6 @@ def test_relational():
         class Config:
             model = TestModel
 
-    print(TestSchema.schema())
     assert TestSchema.schema() == {
         "title": "TestSchema",
         "type": "object",
@@ -382,3 +430,65 @@ def test_many_to_many():
     data = CharacterSchema.from_orm(character).dict()
 
     assert data == {"id": 1, "many_to_many": [1]}
+
+
+def test_many_to_many_pure_type():
+    class Movie1(models.Model):
+        name = models.CharField()
+
+        class Meta:
+            app_label = "tests"
+
+    class Character1(models.Model):
+        many_to_many = models.ManyToManyField(Movie1, blank=True)
+
+        class Meta:
+            app_label = "tests"
+
+    class CharacterSchema(ModelSchema):
+        class Config:
+            model = Character1
+
+    # Mock database data:
+    movie = 123
+
+    many_to_many = Mock(spec=Manager)
+    many_to_many.all = lambda: [movie]
+
+    character = Mock()
+    character.id = 1
+    character.many_to_many = many_to_many
+
+    data = CharacterSchema.from_orm(character).dict()
+    assert data == {"id": 1, "many_to_many": [123]}
+
+
+def test_many_to_many_error():
+    class Movie2(models.Model):
+        name = models.CharField()
+
+        class Meta:
+            app_label = "tests"
+
+    class Character2(models.Model):
+        many_to_many = models.ManyToManyField(Movie2, blank=True)
+
+        class Meta:
+            app_label = "tests"
+
+    class CharacterSchema(ModelSchema):
+        class Config:
+            model = Character2
+
+    # Mock database data:
+    movie = "something"
+
+    many_to_many = Mock(spec=Manager)
+    many_to_many.all = lambda: [movie]
+
+    character = Mock()
+    character.id = 1
+    character.many_to_many = many_to_many
+
+    with pytest.raises(ValidationError):
+        CharacterSchema.from_orm(character).dict()

@@ -9,7 +9,6 @@ from typing import (
     Optional,
     Set,
     Type,
-    Union,
     cast,
     no_type_check,
 )
@@ -21,8 +20,8 @@ from dantico.mixins import SchemaMixins
 from dantico.model_validators import ModelValidatorGroup
 from dantico.schema_registry import registry as global_registry
 from dantico.utils import compute_field_annotations
-from django.db.models import Field, ManyToManyRel, ManyToOneRel
-from pydantic import BaseConfig, BaseModel, PyObject
+from django.db.models import Field, ManyToManyRel, ManyToOneRel, Model as DJModel
+from pydantic import BaseConfig, BaseModel
 from pydantic.class_validators import (
     extract_root_validators,
     extract_validators,
@@ -36,13 +35,12 @@ from pydantic.main import (
     generate_hash_function,
     validate_custom_root_type,
 )
-from pydantic.typing import get_args, get_origin, is_classvar, resolve_annotations
+from pydantic.typing import is_classvar, resolve_annotations
 from pydantic.utils import (
     ROOT_KEY,
     ClassAttribute,
     generate_model_signature,
     is_valid_field,
-    lenient_issubclass,
     unique_list,
     validate_field_name,
 )
@@ -128,18 +126,21 @@ def update_class_missing_fields(
         elif is_valid_field(ann_name):
             validate_field_name(bases, ann_name)
             value = namespace.get(ann_name, Undefined)
-            allowed_types = (
-                get_args(ann_type) if get_origin(ann_type) is Union else (ann_type,)  # type: ignore [comparison-overlap]
-            )
-            if (
-                is_untouched(value)
-                and ann_type != PyObject
-                and not any(
-                    lenient_issubclass(get_origin(allowed_type), Type)  # type: ignore
-                    for allowed_type in allowed_types
-                )
-            ):
-                continue
+            # more of a Pydantic stuff
+            # allowed_types = (
+            #     get_args(ann_type) if get_origin(ann_type) is Union else (ann_type,)  # type: ignore [comparison-overlap]
+            # )
+            #
+            # uncomment, if required in the future
+            # if (
+            #     is_untouched(value)
+            #     and ann_type != PyObject
+            #     and not any(
+            #         lenient_issubclass(get_origin(allowed_type), Type)  # type: ignore
+            #         for allowed_type in allowed_types
+            #     )
+            # ):
+            #     continue
             fields[ann_name] = ModelField.infer(
                 name=ann_name,
                 value=value,
@@ -164,11 +165,7 @@ def update_class_missing_fields(
                 class_validators=vg.get_validators(var_name),
                 config=config,
             )
-            if var_name in fields and inferred.type_ != fields[var_name].type_:
-                raise TypeError(
-                    f"The type of {cls.__name__}.{var_name} differs from the new default value; "
-                    f"if you wish to change the type of this field, please use a type annotation"
-                )
+
             fields[var_name] = inferred
 
     _custom_root_type = ROOT_KEY in fields
@@ -246,6 +243,11 @@ class ModelSchemaConfig(BaseConfig):
         if not self.model:
             raise ConfigError("Invalid Configuration. 'model' is required")
 
+        if not issubclass(self.model, DJModel):
+            raise ConfigError(
+                f"'{self.model.__class__.__name__}' must be valid Django model"
+            )
+
         if self.include and self.exclude:
             raise ConfigError(
                 "Only one of 'include' or 'exclude' should be set in configuration."
@@ -303,78 +305,71 @@ class ModelSchemaMetaclass(ModelMetaclass):
         if bases == (SchemaBaseModel,) or not namespace.get("Config"):
             return cls
 
-        if issubclass(cls, ModelSchema):
-            config = namespace["Config"]
-            config_instance = ModelSchemaConfig(name, config)
-            annotations = namespace.get("__annotations__", {})
+        # `cls` will be subclass of `ModelSchema` in all other case
+        config = namespace["Config"]
+        config_instance = ModelSchemaConfig(name, config)
+        annotations = namespace.get("__annotations__", {})
 
-            try:
-                fields = list(config_instance.model_fields())
-            except AttributeError as exc:
-                raise ConfigError(
-                    f"{exc} (Is `Config.model` a valid Django model class?)"
-                )
+        fields = list(config_instance.model_fields())
 
-            field_values, _seen = {}, set()
+        field_values, _seen = {}, set()
 
-            all_fields = {f.name: f for f in fields}
-            config_instance.check_invalid_keys(**all_fields)
+        all_fields = {f.name: f for f in fields}
+        config_instance.check_invalid_keys(**all_fields)
 
-            for field in chain(fields, annotations.copy()):
-                field_name = getattr(
-                    field, "name", getattr(field, "related_name", field)
-                )
+        for field in chain(fields, annotations.copy()):
+            field_name = getattr(field, "name", getattr(field, "related_name", field))
 
-                if (
-                    field_name in _seen
+            if (
+                field_name in _seen
+                or (
+                    (
+                        config_instance.include
+                        and field_name not in config_instance.include
+                    )
                     or (
-                        (
-                            config_instance.include
-                            and field_name not in config_instance.include
-                        )
-                        or (
-                            config_instance.exclude
-                            and field_name in config_instance.exclude
-                        )
+                        config_instance.exclude
+                        and field_name in config_instance.exclude
                     )
-                    and field_name not in annotations
+                )
+                and field_name not in annotations
+            ):
+                continue
+
+            _seen.add(field_name)
+            if field_name in annotations and field_name in namespace:
+
+                python_type = annotations.pop(field_name)
+                pydantic_field = namespace[field_name]
+                if (
+                    hasattr(pydantic_field, "default_factory")
+                    and pydantic_field.default_factory
                 ):
-                    continue
+                    pydantic_field = pydantic_field.default_factory()
 
-                _seen.add(field_name)
-                if field_name in annotations and field_name in namespace:
+            elif field_name in annotations:
+                python_type = annotations.pop(field_name)
+                pydantic_field = (
+                    None if Optional[python_type] == python_type else Ellipsis
+                )
 
-                    python_type = annotations.pop(field_name)
-                    pydantic_field = namespace[field_name]
-                    if (
-                        hasattr(pydantic_field, "default_factory")
-                        and pydantic_field.default_factory
-                    ):
-                        pydantic_field = pydantic_field.default_factory()
-
-                elif field_name in annotations:
-                    python_type = annotations.pop(field_name)
-                    pydantic_field = (
-                        None if Optional[python_type] == python_type else Ellipsis
+            else:
+                python_type, pydantic_field = django_to_pydantic_with_choices(
+                    field,
+                    registry=config_instance.registry,
+                    depth=config_instance.depth,
+                    skip_registry=config_instance.skip_registry,
+                )
+                if config_instance.is_field_in_optional(field_name):
+                    pydantic_field = ModelSchemaConfig.clone_field(
+                        field=pydantic_field, default=None, default_factory=None
                     )
 
-                else:
-                    python_type, pydantic_field = django_to_pydantic_with_choices(
-                        field,
-                        registry=config_instance.registry,
-                        depth=config_instance.depth,
-                        skip_registry=config_instance.skip_registry,
-                    )
-                    if config_instance.is_field_in_optional(field_name):
-                        pydantic_field = ModelSchemaConfig.clone_field(
-                            field=pydantic_field, default=None, default_factory=None
-                        )
+            field_values[field_name] = (python_type, pydantic_field)
 
-                field_values[field_name] = (python_type, pydantic_field)
-            cls = update_class_missing_fields(
-                cls, list(bases), compute_field_annotations(namespace, **field_values)
-            )
-            return cls
+        cls = update_class_missing_fields(
+            cls, list(bases), compute_field_annotations(namespace, **field_values)
+        )
         return cls
 
 
