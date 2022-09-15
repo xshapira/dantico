@@ -18,8 +18,8 @@ The key features are:
 
 ## Requirements
 
-- Python 3.6+
-- Django 2.2+
+- Python 3.7+
+- Django 3.0+
 - Pydantic 1.6+
 
 ## Installation
