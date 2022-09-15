@@ -28,7 +28,7 @@ jobs:
           key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}-root
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: pip install -e .[all,dev]
+        run: pip install -e .[all,dev,test]
       - name: Install Django
         run: pip install "Django${{ matrix.django-version }}"
       - name: Install Pydantic
