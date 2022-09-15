@@ -49,6 +49,8 @@ dependencies = [
     "pydantic[email]"
 ]
 
+dynamic = ["version"]
+
 [project.urls]
 Homepage = "https://github.com/xshapira/dantico"
 Documentation = "https://github.com/xshapira/dantico"
