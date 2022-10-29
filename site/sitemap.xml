@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://dantico.github.io/</loc>
+         <lastmod>2022-10-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://dantico.github.io/excluding_including/</loc>
+         <lastmod>2022-10-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://dantico.github.io/field_validator/</loc>
+         <lastmod>2022-10-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://dantico.github.io/introspect/</loc>
+         <lastmod>2022-10-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://dantico.github.io/optional_fields/</loc>
+         <lastmod>2022-10-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://dantico.github.io/schema_customization/</loc>
+         <lastmod>2022-10-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+</urlset>
