@@ -4,6 +4,7 @@ site_url: https://dantico.github.io/
 
 repo_name: xshapira/dantico
 repo_url: https://github.com/xshapira/dantico
+edit_uri: ''
 
 theme:
   name: 'material'
@@ -35,6 +36,8 @@ markdown_extensions:
   - tables
   - pymdownx.highlight
   - pymdownx.superfences
+  - toc:
+      permalink: True
 
 nav:
   - 'Quick start': index.md
