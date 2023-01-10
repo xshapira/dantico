@@ -18,10 +18,10 @@ from typing import (
     no_type_check,
 )
 from uuid import UUID
-
 from dantico.factory import SchemaFactory
 from dantico.schema_registry import SchemaRegister, registry as global_registry
 from django.db import models
+import django
 from django.db.models.fields import Field
 from django.utils.encoding import force_str
 from pydantic import AnyUrl, EmailStr, IPvAnyAddress, Json
@@ -348,12 +348,14 @@ def field_to_django_model(
     return construct_relational_field_info(field, registry=registry, depth=depth)
 
 
-@no_type_check
-@django_to_pydantic.register(models.JSONField)
-def field_to_json_string(
-    field: Field, **kwargs: Dict[str, Any]
-) -> Tuple[Type, FieldInfo]:
-    python_type = Json
-    if field.null:
-        python_type = Optional[Json]
-    return construct_field_info(python_type, field)
+if django.VERSION >= (3, 1):
+
+    @no_type_check
+    @django_to_pydantic.register(models.JSONField)
+    def field_to_json_string(
+        field: Field, **kwargs: Dict[str, Any]
+    ) -> Tuple[Type, FieldInfo]:
+        python_type = Json
+        if field.null:
+            python_type = Optional[Json]
+        return construct_field_info(python_type, field)
