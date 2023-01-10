@@ -135,7 +135,7 @@ class FieldConversionProps:
             data["blank"] = field_options.get("blank", False)
             data["is_null"] = field_options.get("null", False)
             data["max_length"] = field_options.get("max_length")
-            data.update(alias=None)
+            data["alias"] = None
         if field.is_relation and hasattr(field, "get_attname"):
             data["alias"] = field.get_attname()
         self.__dict__ = data
