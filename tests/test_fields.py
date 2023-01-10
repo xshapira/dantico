@@ -71,7 +71,7 @@ def test_all_fields():
         ip_address_field = models.IPAddressField()
         image_field = models.ImageField()
         integer_field = models.IntegerField()
-        null_boolean_field = models.BooleanField(null=True)
+        null_boolean_field = models.NullBooleanField()
         positive_integer_field = models.PositiveIntegerField()
         positive_small_integer_field = models.PositiveSmallIntegerField()
         slug_field = models.SlugField()
